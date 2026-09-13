@@ -1,0 +1,16 @@
+{
+  "name": "@ata-project/mcp",
+  "version": "0.1.0",
+  "description": "JSON Schema validation provider for the Model Context Protocol TypeScript SDK, for runtimes that do not allow code generation",
+  "license": "MIT",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": ["index.js", "index.d.ts", "README.md"],
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "ata-validator": "^1.20.0"
+  },
+  "keywords": ["mcp", "model-context-protocol", "json-schema", "validation", "cloudflare-workers", "csp"]
+}
