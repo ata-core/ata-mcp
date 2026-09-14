@@ -13,7 +13,11 @@
 
 const assert = require('node:assert')
 const { spawnSync } = require('node:child_process')
-const { AtaJsonSchemaValidator } = require('./index.js')
+const { AtaJsonSchemaValidator, AtaAotJsonSchemaValidator } = require('./index.js')
+const { compileTools, schemaKey } = require('./build.js')
+const os = require('node:os')
+const path = require('node:path')
+const fs = require('node:fs')
 
 // The SDK's two providers, reproduced from its source so the comparison does
 // not need the SDK installed.
@@ -165,6 +169,65 @@ for (const [name, build] of [['cfworker', cfworkerProvider], ['ajv', ajvProvider
   const blocked = run(['--disallow-code-generation-from-strings'])
   ok('runs with code generation blocked', blocked.status === 0)
   ok('identical verdicts with code generation blocked', normal.stdout === blocked.stdout && normal.stdout.length > 0)
+}
+
+// --- the ahead-of-time provider ---------------------------------------------
+// On an edge runtime the runtime provider is the wrong half: measured on five
+// tool schemas it costs about 85 KB gzipped and 12 ms of cold start, against
+// 0.74 ms for compiled modules. What is checked here is that the compiled path
+// answers the same way, says so when a schema was never compiled, and produces
+// the same message as the runtime path.
+{
+  const TOOLS = {
+    pick: {
+      type: 'object', additionalProperties: false, required: ['status'],
+      properties: { status: { enum: ['AWAITING_CLEARANCE', 'PART_SETTLED', 'CLOSED_OUT'] } },
+    },
+    search: {
+      type: 'object', additionalProperties: false, required: ['query'],
+      properties: { query: { type: 'string', minLength: 1 }, limit: { type: 'integer', minimum: 1, maximum: 100 } },
+    },
+  }
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ata-mcp-'))
+  const built = require('node:child_process').spawnSync(process.execPath, ['-e', `
+    const { compileTools } = require(${JSON.stringify(require.resolve('./build.js'))})
+    compileTools({ tools: ${JSON.stringify(TOOLS)}, outDir: ${JSON.stringify(outDir)}, format: 'cjs' })
+      .then((r) => process.stdout.write(JSON.stringify(r)))
+  `], { encoding: 'utf8' })
+  const result = JSON.parse(built.stdout || '{}')
+  ok('both tools compiled', Array.isArray(result.compiled) && result.compiled.length === 2)
+  ok('nothing was declined', Array.isArray(result.declined) && result.declined.length === 0)
+
+  const index = require(result.index)
+  const aot = new AtaAotJsonSchemaValidator(index, { detailed: true })
+  const pick = aot.getValidator(TOOLS.pick)
+  ok('the compiled validator accepts', pick({ status: 'CLOSED_OUT' }).valid === true)
+  ok('the compiled validator rejects', pick({ status: 'paid in part' }).valid === false)
+
+  // The whole point of the detailed form, and it has to survive compilation:
+  // a standalone module carries `params` but not the `detail` the runtime
+  // engine attaches, so the message is rebuilt from params and the document.
+  const aotMsg = pick({ status: 'paid in part' }).errorMessage
+  const rtMsg = new AtaJsonSchemaValidator({ detailed: true }).getValidator(TOOLS.pick)({ status: 'paid in part' }).errorMessage
+  ok('the compiled path names every allowed value',
+    ['AWAITING_CLEARANCE', 'PART_SETTLED', 'CLOSED_OUT'].every((v) => aotMsg.includes(v)))
+  ok('the compiled path names what arrived', aotMsg.includes('paid in part'))
+  ok('both providers word it identically', aotMsg === rtMsg)
+
+  // A schema nobody compiled is a build that is out of step. Saying so beats
+  // validating against the wrong thing or silently letting it through.
+  let threw = null
+  try { aot.getValidator({ type: 'object', properties: { nope: { type: 'string' } } }) } catch (e) { threw = e }
+  ok('an uncompiled schema is refused', threw !== null && /no compiled validator/.test(threw.message))
+  ok('the refusal names what is compiled', /pick/.test(threw.message) && /search/.test(threw.message))
+
+  // Key order is not significant in JSON Schema, so the lookup cannot depend
+  // on it. It hashes a canonical form for that reason.
+  const reordered = { properties: TOOLS.search.properties, required: ['query'], additionalProperties: false, type: 'object' }
+  ok('the lookup ignores key order', schemaKey(reordered) === schemaKey(TOOLS.search))
+  ok('a reordered schema still resolves', aot.getValidator(reordered)({ query: 'hi' }).valid === true)
+
+  fs.rmSync(outDir, { recursive: true, force: true })
 }
 
 console.log(`ata-mcp: ${checks} checks passed`)

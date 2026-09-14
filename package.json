@@ -5,12 +5,39 @@
   "license": "MIT",
   "main": "index.js",
   "types": "index.d.ts",
-  "files": ["index.js", "index.d.ts", "README.md"],
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "build.js",
+    "build.d.ts",
+    "README.md"
+  ],
   "scripts": {
     "test": "node test.js"
   },
   "dependencies": {
     "ata-validator": "^1.20.0"
   },
-  "keywords": ["mcp", "model-context-protocol", "json-schema", "validation", "cloudflare-workers", "csp"]
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "json-schema",
+    "validation",
+    "cloudflare-workers",
+    "csp"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./build": {
+      "types": "./build.d.ts",
+      "default": "./build.js"
+    },
+    "./package.json": "./package.json"
+  }
 }
