@@ -39,5 +39,13 @@
       "default": "./build.js"
     },
     "./package.json": "./package.json"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ata-core/ata-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ata-core/ata-mcp/issues"
+  },
+  "homepage": "https://github.com/ata-core/ata-mcp#readme"
 }
