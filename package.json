@@ -16,7 +16,7 @@
     "test": "node test.js"
   },
   "dependencies": {
-    "ata-validator": "^1.20.0"
+    "ata-validator": "^1.23.0"
   },
   "keywords": [
     "mcp",
