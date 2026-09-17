@@ -80,24 +80,24 @@ the check.
 
 ## Measured
 
-Node 25, an eight-field tool schema with a nested array of objects, 20000 calls
-per round, medians of 7 interleaved rounds.
+Node 25, ata-validator 1.25.0, an eight-field tool schema with a nested array of
+objects, 20000 calls per round, medians of 7 interleaved rounds.
 
 With code generation blocked, which is the case this provider is for:
 
 | provider | valid | invalid |
 |---|---|---|
-| ata | 191 ns | 533 ns |
-| cfworker | 2861 ns | 873 ns |
+| ata | 174 ns | 499 ns |
+| cfworker | 2788 ns | 837 ns |
 | ajv | throws `EvalError` | throws `EvalError` |
 
 With code generation allowed:
 
 | provider | valid | invalid |
 |---|---|---|
-| ata | 18 ns | 225 ns |
-| ajv | 56 ns | 38 ns |
-| cfworker | 2962 ns | 872 ns |
+| ata | 15 ns | 201 ns |
+| ajv | 52 ns | 34 ns |
+| cfworker | 2737 ns | 831 ns |
 
 ajv is the one to beat on the failing path when it can compile, and it is not
 beaten there. Rejecting is where it stops early and reports almost nothing;
