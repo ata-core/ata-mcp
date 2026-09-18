@@ -78,6 +78,17 @@ compiled, because a standalone module imports nothing and there is nowhere to
 put your class. Those schemas are refused rather than silently compiled without
 the check.
 
+## Verified inside the SDK
+
+`e2e-sdk.mjs` runs a real Server and Client from `@modelcontextprotocol/sdk`
+(1.30.0) over an in-memory transport, with a tool declaring an
+`outputSchema`. With code generation allowed, the SDK's default provider,
+the cfworker provider and this one accept the same valid result and reject
+the same invalid one with the same MCP error. With code generation blocked
+(`node --disallow-code-generation-from-strings`, the restriction Workers and
+strict-CSP pages enforce), the default provider fails the tool call even
+when the result is valid; cfworker and ata keep answering.
+
 ## Measured
 
 Node 25, ata-validator 1.25.0, an eight-field tool schema with a nested array of
