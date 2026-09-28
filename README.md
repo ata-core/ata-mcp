@@ -91,24 +91,24 @@ when the result is valid; cfworker and ata keep answering.
 
 ## Measured
 
-Node 25, ata-validator 1.25.0, an eight-field tool schema with a nested array of
+Node 25, ata-validator 1.36.0, an eight-field tool schema with a nested array of
 objects, 20000 calls per round, medians of 7 interleaved rounds.
 
 With code generation blocked, which is the case this provider is for:
 
 | provider | valid | invalid |
 |---|---|---|
-| ata | 174 ns | 499 ns |
-| cfworker | 2788 ns | 837 ns |
+| ata | 181 ns | 509 ns |
+| cfworker | 2906 ns | 869 ns |
 | ajv | throws `EvalError` | throws `EvalError` |
 
 With code generation allowed:
 
 | provider | valid | invalid |
 |---|---|---|
-| ata | 15 ns | 201 ns |
-| ajv | 52 ns | 34 ns |
-| cfworker | 2737 ns | 831 ns |
+| ata | 19 ns | 192 ns |
+| ajv | 54 ns | 34 ns |
+| cfworker | 2845 ns | 860 ns |
 
 ajv is the one to beat on the failing path when it can compile, and it is not
 beaten there. Rejecting is where it stops early and reports almost nothing;
