@@ -1,7 +1,7 @@
 {
   "name": "@ata-project/mcp",
   "version": "0.1.2",
-  "description": "JSON Schema validation provider for the Model Context Protocol TypeScript SDK, for runtimes that do not allow code generation",
+  "description": "JSON Schema validation for the MCP TypeScript SDK that works where code generation is blocked.",
   "license": "MIT",
   "main": "index.js",
   "types": "index.d.ts",
