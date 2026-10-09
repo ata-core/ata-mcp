@@ -21,6 +21,8 @@ export declare class AtaJsonSchemaValidator {
 }
 
 export interface AtaAotJsonSchemaValidatorOptions extends AtaJsonSchemaValidatorOptions {
+  /** The provider a missing schema goes to under `onMissing: 'compile'`; the main entry supplies the runtime provider when this is left out. */
+  fallback?: { getValidator<T>(schema: object): (input: unknown) => ValidationResult<T> };
   /**
    * What to do when a schema has no compiled validator. 'throw' (default) says
    * the build is out of step. 'compile' falls back to compiling at run time,

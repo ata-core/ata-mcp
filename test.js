@@ -230,4 +230,32 @@ for (const [name, build] of [['cfworker', cfworkerProvider], ['ajv', ajvProvider
   fs.rmSync(outDir, { recursive: true, force: true })
 }
 
+// --- the /aot entry carries nothing ----------------------------------------
+{
+  const { AtaAotJsonSchemaValidator: AotOnly } = require('./aot.js')
+  for (const f of ['aot.js', 'key.js', 'render.js']) {
+    const src = fs.readFileSync(path.join(__dirname, f), 'utf8')
+    const reqs = (src.match(/require\('([^']+)'\)/g) || []).map((r) => r.slice(9, -2))
+    ok(`${f} requires only its siblings`, reqs.every((r) => r === './key.js' || r === './render.js'))
+  }
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ata-mcp-aot-'))
+  const schema = { type: 'object', required: ['n'], properties: { n: { type: 'integer', minimum: 1 } } }
+  const built = spawnSync(process.execPath, ['-e', `
+    const { compileTools } = require(${JSON.stringify(require.resolve('./build.js'))})
+    compileTools({ tools: { count: ${JSON.stringify(schema)} }, outDir: ${JSON.stringify(dir)}, format: 'cjs' }).then((r) => process.stdout.write(r.index))
+  `], { encoding: 'utf8' })
+  const index = require(built.stdout.trim())
+  const aot = new AotOnly(index, { detailed: true })
+  const check = aot.getValidator(schema)
+  ok('/aot validates through the compiled module', check({ n: 2 }).valid === true && check({ n: 0 }).valid === false)
+  ok('/aot message is the detailed one', /found 0/.test(check({ n: 0 }).errorMessage))
+  let threw = false
+  try { new AotOnly(index, { onMissing: 'compile' }) } catch (e) { threw = /fallback/.test(e.message) }
+  ok("/aot refuses onMissing 'compile' without a fallback", threw)
+  const withFallback = new AotOnly(index, { onMissing: 'compile', fallback: new AtaJsonSchemaValidator() })
+  ok('/aot hands a missing schema to the fallback', withFallback.getValidator({ type: 'string' })(3).valid === false)
+  const main = new AtaAotJsonSchemaValidator(index, { onMissing: 'compile' })
+  ok("the main entry's class supplies the runtime provider for 'compile'", main.getValidator({ type: 'string' })('x').valid === true)
+}
+
 console.log(`ata-mcp: ${checks} checks passed`)

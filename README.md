@@ -59,11 +59,20 @@ await compileTools({
 
 ```js
 // worker
-import { AtaAotJsonSchemaValidator } from '@ata-project/mcp'
+import { AtaAotJsonSchemaValidator } from '@ata-project/mcp/aot'
 import tools from './compiled/index.mjs'
 
 const server = new McpServer(info, { validator: new AtaAotJsonSchemaValidator(tools) })
 ```
+
+Import it from `@ata-project/mcp/aot` on a Worker, not from the main entry.
+The main entry holds the runtime provider too and so requires ata-validator,
+and a bundler brings the whole engine along with it: on a Worker made with
+the SDK and Hono that was 1.2 MB of source, more than the SDK itself. The
+`/aot` entry requires nothing but the key and the message renderers. Under
+`onMissing: 'compile'` it needs `options.fallback`, a provider to hand a
+missing schema to; the main entry's class supplies the runtime provider for
+that by itself.
 
 The lookup is by a hash of the schema rather than by name or by object
 identity. A name has to be kept in step by hand and identity does not survive a

@@ -1,6 +1,6 @@
 {
   "name": "@ata-project/mcp",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "JSON Schema validation for the MCP TypeScript SDK that works where code generation is blocked.",
   "license": "MIT",
   "main": "index.js",
@@ -8,6 +8,10 @@
   "files": [
     "index.js",
     "index.d.ts",
+    "aot.js",
+    "aot.d.ts",
+    "key.js",
+    "render.js",
     "build.js",
     "build.d.ts",
     "README.md"
@@ -33,6 +37,10 @@
     ".": {
       "types": "./index.d.ts",
       "default": "./index.js"
+    },
+    "./aot": {
+      "types": "./aot.d.ts",
+      "default": "./aot.js"
     },
     "./build": {
       "types": "./build.d.ts",
