@@ -74,6 +74,10 @@ the SDK and Hono that was 1.2 MB of source, more than the SDK itself. The
 missing schema to; the main entry's class supplies the runtime provider for
 that by itself.
 
+A whole server in this shape, with Hono and the SDK on Workers, tests and
+the numbers measured, is at
+[ata-core/mcp-ata-workers-starter](https://github.com/ata-core/mcp-ata-workers-starter).
+
 The lookup is by a hash of the schema rather than by name or by object
 identity. A name has to be kept in step by hand and identity does not survive a
 bundler, while the hash comes from the schema itself: if the server declares a
