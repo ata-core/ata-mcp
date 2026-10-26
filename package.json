@@ -1,6 +1,6 @@
 {
   "name": "@ata-project/mcp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "JSON Schema validation for the MCP TypeScript SDK that works where code generation is blocked.",
   "license": "MIT",
   "main": "index.js",
@@ -20,7 +20,7 @@
     "test": "node test.js"
   },
   "dependencies": {
-    "ata-validator": "^1.54.0"
+    "ata-validator": "^1.61.0"
   },
   "keywords": [
     "mcp",
